@@ -5,13 +5,13 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith('/api/') || pathname === '/health') {
-    // Dynamically retrieve the backend URL at runtime (in Docker or Cloud Run)
+    // Use BACKEND_URL from environment, with sensible defaults for different setups:
+    // - Docker Compose internal: http://backend:8000
+    // - Separate deploy: https://api.yourdomain.com
+    // - Local dev: http://127.0.0.1:8000
     const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
     
-    // Construct the destination URL preserving the full path and search parameters
     const targetUrl = new URL(pathname + request.nextUrl.search, backendUrl);
-    
-    // Rewrite the request to proxy it to the backend
     return NextResponse.rewrite(targetUrl);
   }
 
@@ -19,6 +19,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Only run middleware on /api/* and /health
   matcher: ['/api/:path*', '/health'],
 };
