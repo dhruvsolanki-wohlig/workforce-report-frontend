@@ -395,10 +395,17 @@ export default function HomePage() {
   /* ── Save Settings ── */
   const saveSettings = useCallback(async () => {
     try {
+      const payload = { ...settings };
+      if (payload.next_run && payload.next_run.length === 16) {
+        payload.next_run = new Date(payload.next_run).toISOString();
+      }
+      if (payload.stop_run && payload.stop_run.length === 16) {
+        payload.stop_run = new Date(payload.stop_run).toISOString();
+      }
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const errText = await res.text();
@@ -448,11 +455,19 @@ export default function HomePage() {
 
   /* ── Derived states ── */
 
+  const prevBlobUrl = useRef<string>('');
   const iframeSrc = useMemo(() => {
     if (!html) return '';
     const blob = new Blob([html], { type: 'text/html' });
     return URL.createObjectURL(blob);
   }, [html]);
+
+  useEffect(() => {
+    if (prevBlobUrl.current && prevBlobUrl.current !== iframeSrc) {
+      URL.revokeObjectURL(prevBlobUrl.current);
+    }
+    prevBlobUrl.current = iframeSrc;
+  }, [iframeSrc]);
 
   /* ── Render ── */
   return (
@@ -548,6 +563,7 @@ export default function HomePage() {
             {activeTab === 'preview' ? (
               html ? (
                 <iframe
+                  key={iframeSrc}
                   src={iframeSrc}
                   className="absolute inset-0 w-full h-full border-none"
                   sandbox="allow-scripts allow-same-origin"
