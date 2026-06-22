@@ -1,4 +1,4 @@
-# Wohlig Workforce Intelligence Pipeline
+# Wohlig Workforce Report Intelligence Pipeline
 
 Automated end-to-end pipeline for extracting workforce data from Google Drive, auditing it via an LLM (Ollama/Gemini), rendering an HTML/PDF report, and optionally emailing it on a schedule.
 
